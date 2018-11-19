@@ -54,6 +54,7 @@ public class Client {
 			else {
 				t.interrupt();
 				outStr.writeUTF(message);
+				outStr.close();
 				socket.close();
 			}
 		}

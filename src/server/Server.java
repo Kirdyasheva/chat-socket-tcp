@@ -38,7 +38,7 @@ public class Server  extends Thread {
 			    System.out.println("Cliente conectado...");
 			    clients.add(socket);
 			    Thread t = new Server(socket);
-			    t.start(); 
+			    t.start();
 		    }
 		}catch (Exception e) {
 		    e.printStackTrace();
@@ -68,24 +68,26 @@ public class Server  extends Thread {
 		    		switch(splitted[0]) {
 		    		case "send":
 		    			if(splittedLen == 1){
-		    				outStr.writeUTF("Comando não encontrado!");
-		    			}else switch(splitted[1]) {
-		    				case "-all":
-		    					if(splittedLen >= 3)
-		    						sendToAll(header, joinMessageStringArray(splitted, 2), formattedData);
-		    					else
-		    						outStr.writeUTF("Mensagem não informada!\nComo usar: send -all <mensagem>");
-						    	break;
-		    				case "-user":
-		    					if(splittedLen > 3)
-		    						sendToUser(splitted[2], header , joinMessageStringArray(splitted, 3), formattedData);
-		    					else if(splittedLen == 3)
-		    						outStr.writeUTF("Mensagem não informada!\nComo usar: send -user <nome_usuario> <mensagem>");
-		    					else
-		    						outStr.writeUTF("Usuário não informado!\nComo usar: send -user <nome_usuario> <mensagem>");
-			    				break;
-		    				default:
-				    			outStr.writeUTF("Comando não encontrado!");
+		    				this.outStr.writeUTF("Comando inválido \n");
+		    				this.help();
+		    			}else 
+		    				switch(splitted[1]) {
+		    					case "-all":
+		    						if(splittedLen >= 3)
+		    							sendToAll(header, joinMessageStringArray(splitted, 2), formattedData);
+		    						else
+		    							outStr.writeUTF("Mensagem não informada!\nComo usar: send -all <mensagem>");
+		    						break;
+		    					case "-user":
+		    						if(splittedLen > 3)
+		    							sendToUser(splitted[2], header , joinMessageStringArray(splitted, 3), formattedData);
+		    						else if(splittedLen == 3)
+		    							outStr.writeUTF("Mensagem não informada!\nComo usar: send -user <nome_usuario> <mensagem>");
+		    						else
+		    							outStr.writeUTF("Usuário não informado!\nComo usar: send -user <nome_usuario> <mensagem>");
+		    						break;
+		    					default:
+		    						this.help();
 		    			}
 		    			break;
 		    		case "rename":
@@ -103,17 +105,27 @@ public class Server  extends Thread {
 				    		clients.remove(socket);
 				    	    clientsNames.remove(name);
 				    	    socket.close();
+				    	    System.out.println("Cliente desconectado...");
 		    			}else
 		    				outStr.writeUTF("Comando não possui parâmetros!\nComo usar: bye");
 		    			break;
 		    		default:
-		    			outStr.writeUTF("Comando não encontrado!");
+		    			this.help();
 		    	}
 		    	
 			}
 	  }catch (Exception e) {
 	     e.printStackTrace();
 	  }                       
+	}
+	
+	private void help() throws IOException {
+		this.outStr.writeUTF("--- Lista de comandos do chat ---");
+		this.outStr.writeUTF("bye					Sair do Grupo");
+		this.outStr.writeUTF("send -all <message>			Enviar mensagem ao grupo");
+		this.outStr.writeUTF("send -user <name_user> <message>	Enviar mensagem reservada");
+		this.outStr.writeUTF("list					Visualizar participantes");
+		this.outStr.writeUTF("rename <new_name>			Renomear usuário");
 	}
 	
 	private String joinMessageStringArray(String[] splitted, int start) {
@@ -123,6 +135,7 @@ public class Server  extends Thread {
 		}
 		return result.trim();
 	}
+	
 	public Socket getClient(String clientName) {
 		for(String name: clientsNames) {
 			if(name.equals(clientName)) {
@@ -130,7 +143,6 @@ public class Server  extends Thread {
 			}
 		}
 		return null;
-		
 	}
 	
 	public Integer getClientNameIndex(String clientName) {
@@ -151,13 +163,12 @@ public class Server  extends Thread {
 	}
 	
 	public void sendToAll(String header, String message, String date) throws  IOException {
-		System.out.println(header + ": " + message + " " + date + "\r\n");
-//		for(Socket client : clients){
-//			  if(!(client == socket)){
-//				  DataOutputStream output = new DataOutputStream(client.getOutputStream());
-//				  output.writeUTF(header + ": " + message + " " + date + "\r\n");
-//			  }
-//		}          
+		for(Socket client : clients){
+			  if(!(client == this.socket)){
+				  DataOutputStream output = new DataOutputStream(client.getOutputStream());
+				  output.writeUTF(header + ": " + message + " " + date + "\r\n");
+			  }
+		}          
 	}
 	
 	public void sendToUser(String name, String header, String message, String date) throws  IOException{
