@@ -187,6 +187,7 @@ public class Server  extends Thread {
 		else {
 			clientsNames.set(getClientNameIndex(name), newName);
 			name = newName;
+			header = clientIP+":"+clientPort+"/~"+ name;
 			outStr.writeUTF("Cliente Renomeado com sucesso para: " + newName);
 		}
 		
